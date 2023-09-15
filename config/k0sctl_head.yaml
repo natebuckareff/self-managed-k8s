@@ -1,0 +1,6 @@
+apiVersion: k0sctl.k0sproject.io/v1beta1
+kind: Cluster
+metadata:
+  name: local-cluster
+spec:
+  hosts:

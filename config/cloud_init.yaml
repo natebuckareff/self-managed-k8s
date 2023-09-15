@@ -1,0 +1,5 @@
+#cloud-config
+users:
+  - name: root
+    ssh-authorized-keys:
+      - ${SSH_KEY}

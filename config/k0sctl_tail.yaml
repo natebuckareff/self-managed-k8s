@@ -1,0 +1,3 @@
+  k0s:
+    version: 1.27.5+k0s.0
+    dynamicConfig: true
