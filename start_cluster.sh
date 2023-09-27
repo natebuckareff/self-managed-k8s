@@ -37,17 +37,18 @@ setup_network() {
     done
 }
 
-DNSMASQ_PID=""
-
 setup_gateway() {
     sudo dnsmasq --conf-file=./config/dnsmasq.conf --no-daemon --no-resolv --no-hosts &
-    DNSMASQ_PID="$!"
+    local DNSMASQ_PID="$!"
     echo "DNSMASQ_PID=$DNSMASQ_PID"
+    echo "$DNSMASQ_PID" > ./build/dnsmasq.pid
 }
 
 cleanup_gateway() {
-    if [[ ! -z "$DNSMASQ_PID" ]]; then
-        kill "$DNSMASQ_PID"
+    if [[ -f ./build/dnsmasq.pid ]]; then
+        set +e
+        kill "$(cat ./build/dnsmasq.pid)"
+        set -e
     fi
 }
 
@@ -103,7 +104,7 @@ setup_nodes() {
     SSH_PUBKEY=$(eval echo $(echo $CONFIG | jq -cr '.ssh.pubkey'))
 
     if [[ ! -f "./build/$BASE_IMAGE" ]]; then
-        wget -P build https://chuangtzu.ftp.acc.umu.se/images/cloud/bookworm/latest/$BASE_IMAGE
+        wget -P build https://cloud.debian.org/images/cloud/bookworm/latest/$BASE_IMAGE
     fi
 
     SSH_KEY=$(cat $SSH_PUBKEY) envsubst < ./config/cloud_init.yaml \
