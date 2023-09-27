@@ -7,6 +7,9 @@ To bootstrap/start the cluster:
 To reset the cluster without clearing the download cache:
 
 ```
+./cleanup_cluster.sh
+
+# Delete node disk images
 rm -fr ./build/disk
 ```
 
