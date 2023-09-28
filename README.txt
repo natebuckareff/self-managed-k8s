@@ -1,4 +1,4 @@
-To bootstrap/start the cluster:
+To create the cluster:
 
 ```
 ./start_cluster.sh
@@ -13,7 +13,7 @@ To reset the cluster without clearing the download cache:
 rm -fr ./build/disk
 ```
 
-To check that its actually working:
+To check that it's actually working:
 
 ```
 curl -ik -H 'Host: example.com' https://10.0.0.13
