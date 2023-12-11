@@ -1,37 +1,44 @@
-To create the cluster:
+Dependencies:
+- jq
+- kubectl
+- k0sctl (https://github.com/k0sproject/k0sctl#installation)
+
+1. Setup networking:
 
 ```
-./start_cluster.sh
+./setup_network.sh
 ```
 
-To reset the cluster without clearing the download cache:
+2. Start QEMU VMs and install K0S/HAProxy:
 
 ```
-./cleanup_cluster.sh
-
-# Delete node disk images
-rm -fr ./build/disk
+./start_nodes.sh
 ```
 
-To check that it's actually working:
+3. Install nginx ingress controller and apply test.yaml:
+
+```
+./setup_k8s.sh
+```
+
+`start_nodes.sh` merges the K0S kubeconfig into your local kubeconfig, so at
+this point you can monitor progress with `kubectl get pods -A --watch` or
+something like `k9s`.
+
+4. Verify that test pod is working:
 
 ```
 curl -ik -H 'Host: example.com' https://10.0.0.13
 ```
 
-To access an an individual VM after bootstrapping (for debugging):
+Reset nodes by deleting their disks:
 
 ```
-NODE_NAME=node0
-sudo qemu-system-x86_64 \
-    -name "$NODE_NAME" \
-    -m 2G \
-    -smp 2 \
-    -device "virtio-net-pci,netdev=net0" \
-    -netdev "user,id=net0,hostfwd=tcp::2222-:22" \
-    -drive "file=./build/disk/${NODE_NAME}.qcow2,if=virtio,cache=writeback,discard=ignore,format=qcow2" \
-    -drive "file=./build/seed.iso,media=cdrom" \
-    -boot d \
-    -serial stdio \
-    -machine type=pc,accel=kvm
+./reset_nodes.sh
+```
+
+Cleanup networking:
+
+```
+./cleanup_network.sh
 ```

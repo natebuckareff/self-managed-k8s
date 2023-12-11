@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 
-CONFIG=$(cat ./config.json)
-
-set -eux
+set -euxo pipefail
 
 cleanup_network() {
+    set +x
+    local CONFIG=$(cat ./config.json)
+    set -x
+
     set +e
 
     for NODE in $(echo $CONFIG | jq -c '.nodes | .[]'); do
@@ -13,29 +15,20 @@ cleanup_network() {
         sudo ip link delete "${NODE_NAME}tap"
     done
 
-    sudo ip link delete br0
     sudo iptables -t nat -D POSTROUTING ! -o br0 --source 10.0.0.0/24 -j MASQUERADE
+    sudo iptables -D FORWARD -i br0 -j ACCEPT
+    sudo iptables -D FORWARD -o br0 -j ACCEPT
+
+    sudo ip link delete br0
 
     set -e
 }
 
 cleanup_gateway() {
-    if [[ -f ./build/dnsmasq.pid ]]; then
-        set +e
-        kill "$(cat ./build/dnsmasq.pid)"
-        set -e
+    local PID="$(pidof dnsmasq)"
+    if [[ ! -z "$PID" ]]; then
+        sudo kill "$PID"
     fi
-}
-
-wait_for() {
-    echo "Waiting for $1"
-    shift
-    while true; do
-        kubectl wait $@
-        if [[ $? = 0 ]]; then
-            break
-        fi
-    done
 }
 
 cleanup_gateway
