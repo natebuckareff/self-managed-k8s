@@ -74,12 +74,27 @@ wait_for() {
     done
 }
 
+
 temp_ssh() {
-    ssh -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking no" $@
+    set +x
+    local CONFIG=$(cat ./config.json)
+    local SSH_IDENTITY=$(echo $CONFIG | jq -cr '.ssh.identity')
+    set -x
+    ssh \
+        -o "IdentitiesOnly=yes" -i "$SSH_IDENTITY" \
+        -o "UserKnownHostsFile=/dev/null" \
+        -o "StrictHostKeyChecking no" $@
 }
 
 temp_scp() {
-    scp -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking no" $@
+    set +x
+    local CONFIG=$(cat ./config.json)
+    local SSH_IDENTITY=$(echo $CONFIG | jq -cr '.ssh.identity')
+    set -x
+    scp \
+        -o "IdentitiesOnly=yes" -i "$SSH_IDENTITY" \
+        -o "UserKnownHostsFile=/dev/null" \
+        -o "StrictHostKeyChecking no" $@
 }
 
 setup_k8s

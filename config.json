@@ -3,7 +3,7 @@
     "k0s_version": "v1.28.4+k0s.0",
     "ssh": {
         "port": 22,
-        "pubkey": "~/.ssh/id_ed25519.pub"
+        "identity": "~/.ssh/id_ed25519"
     },
     "nodes": [
         { "name": "node0", "mac": "86:e2:e3:21:13:b4", "ip": "10.0.0.10", "role": "controller" },

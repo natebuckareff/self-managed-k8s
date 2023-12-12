@@ -5,7 +5,7 @@ set -euo pipefail
 generate_k0sctl_config() {
     local CONFIG=$(cat ./config.json)
     local SSH_PORT=$(echo $CONFIG | jq -cr '.ssh.port')
-    local SSH_PUBKEY=$(eval echo $(echo $CONFIG | jq -cr '.ssh.pubkey'))
+    local SSH_IDENTITY=$(eval echo $(echo $CONFIG | jq -cr '.ssh.identity'))
 
     cat ./config/k0sctl_head.yaml
 
@@ -22,7 +22,7 @@ generate_k0sctl_config() {
       address: ${NODE_IP}
       user: root
       port: ${SSH_PORT}
-      keyPath: ${SSH_PUBKEY}
+      keyPath: ${SSH_IDENTITY}
 EOF
         fi
     done

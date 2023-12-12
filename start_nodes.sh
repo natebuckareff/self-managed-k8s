@@ -7,7 +7,7 @@ start_nodes() {
     local CONFIG=$(cat ./config.json)
     local BASE_IMAGE=$(echo $CONFIG | jq -cr '.base_image')
     local SSH_PORT=$(echo $CONFIG | jq -cr '.ssh.port')
-    local SSH_PUBKEY=$(eval echo $(echo $CONFIG | jq -cr '.ssh.pubkey'))
+    local SSH_IDENTITY=$(eval echo $(echo $CONFIG | jq -cr '.ssh.identity'))
     set -x
 
     if [[ ! -f "./build/$BASE_IMAGE" ]]; then
@@ -16,8 +16,7 @@ start_nodes() {
 
     # Substitute `SSH_KEY` info `cloud_init.yaml` and then pipe that into
     # `cloud-localds` to generate the seed ISO file
-    SSH_KEY=$(cat $SSH_PUBKEY) envsubst < ./config/cloud_init.yaml \
-        | tee \
+    SSH_KEY=$(cat "${SSH_IDENTITY}.pub") envsubst < ./config/cloud_init.yaml \
         | cloud-localds -v ./build/seed.iso -
 
     mkdir -p ./logs
@@ -140,11 +139,25 @@ download_k0s() {
 }
 
 temp_ssh() {
-    ssh -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking no" $@
+    set +x
+    local CONFIG=$(cat ./config.json)
+    local SSH_IDENTITY=$(echo $CONFIG | jq -cr '.ssh.identity')
+    set -x
+    ssh \
+        -o "IdentitiesOnly=yes" -i "$SSH_IDENTITY" \
+        -o "UserKnownHostsFile=/dev/null" \
+        -o "StrictHostKeyChecking no" $@
 }
 
 temp_scp() {
-    scp -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking no" $@
+    set +x
+    local CONFIG=$(cat ./config.json)
+    local SSH_IDENTITY=$(echo $CONFIG | jq -cr '.ssh.identity')
+    set -x
+    scp \
+        -o "IdentitiesOnly=yes" -i "$SSH_IDENTITY" \
+        -o "UserKnownHostsFile=/dev/null" \
+        -o "StrictHostKeyChecking no" $@
 }
 
 start_nodes
